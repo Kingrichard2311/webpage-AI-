@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocean Encryption Tool</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            background: #001a33;
+        }
+        
+        #ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #001a33 0%, #003d66 50%, #006699 100%);
+            z-index: 0;
+        }
+        
+        .wave {
+            position: absolute;
+            width: 200%;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            animation: wave-animation linear infinite;
+        }
+        
+        .wave:nth-child(1) {
+            bottom: 0;
+            animation-duration: 8s;
+        }
+        
+        .wave:nth-child(2) {
+            bottom: 20px;
+            animation-duration: 10s;
+            animation-delay: -2s;
+            opacity: 0.7;
+        }
+        
+        .wave:nth-child(3) {
+            bottom: 40px;
+            animation-duration: 12s;
+            animation-delay: -4s;
+            opacity: 0.5;
+        }
+        
+        @keyframes wave-animation {
+            0% {
+                transform: translateX(-50%) translateY(0);
+            }
+            100% {
+                transform: translateX(0%) translateY(0);
+            }
+        }
+        
+        .bubble {
+            position: absolute;
+            bottom: -50px;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            animation: rise linear infinite;
+        }
+        
+        @keyframes rise {
+            0% {
+                bottom: -50px;
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                bottom: 100%;
+                opacity: 0;
+            }
+        }
+        
+        #root {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 2.5rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #006699, #00a3cc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #555;
+            font-size: 1.1rem;
+        }
+        
+        .cipher-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .cipher-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #006699;
+            background: white;
+            color: #006699;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .cipher-btn:hover {
+            background: #006699;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 102, 153, 0.3);
+        }
+        
+        .cipher-btn.active {
+            background: #006699;
+            color: white;
+        }
+        
+        .input-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-section label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .input-section textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 120px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .input-section input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        
+        .input-section textarea:focus,
+        .input-section input:focus {
+            outline: none;
+            border-color: #006699;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        
+        .encrypt-btn {
+            background: linear-gradient(135deg, #00a3cc, #006699);
+        }
+        
+        .decrypt-btn {
+            background: linear-gradient(135deg, #006699, #004466);
+        }
+        
+        .clear-btn {
+            background: linear-gradient(135deg, #999, #666);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .result-section h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        
+        .result-text {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            min-height: 100px;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            color: #333;
+        }
+        
+        .copy-btn {
+            margin-top: 1rem;
+            padding: 0.5rem 1.5rem;
+            background: #006699;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .copy-btn:hover {
+            background: #004466;
+        }
+        
+        .info-box {
+            background: rgba(0, 163, 204, 0.1);
+            border-left: 4px solid #00a3cc;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            border-radius: 5px;
+        }
+        
+        .info-box h4 {
+            color: #006699;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-box p {
+            color: #555;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div id="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    <div id="root"></div>
+
+    <script>
+        // Create bubbles
+        const oceanBg = document.getElementById('ocean-bg');
+        for (let i = 0; i < 20; i++) {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.style.left = Math.random() * 100 + '%';
+            bubble.style.width = Math.random() * 30 + 10 + 'px';
+            bubble.style.height = bubble.style.width;
+            bubble.style.animationDuration = Math.random() * 10 + 10 + 's';
+            bubble.style.animationDelay = Math.random() * 5 + 's';
+            oceanBg.appendChild(bubble);
+        }
+
+        // Caesar Cipher
+        function caesarCipher(text, shift, decrypt = false) {
+            if (decrypt) shift = -shift;
+            return text.split('').map(char => {
+                if (char.match(/[a-z]/i)) {
+                    const code = char.charCodeAt(0);
+                    const isUpperCase = char === char.toUpperCase();
+                    const base = isUpperCase ? 65 : 97;
+                    return String.fromCharCode(((code - base + shift + 26) % 26) + base);
+                }
+                return char;
+            }).join('');
+        }
+
+        // ROT13
+        function rot13(text) {
+            return caesarCipher(text, 13);
+        }
+
+        // Base64
+        function base64Encode(text) {
+            return btoa(unescape(encodeURIComponent(text)));
+        }
+
+        function base64Decode(text) {
+            try {
+                return decodeURIComponent(escape(atob(text)));
+            } catch (e) {
+                return 'Error: Invalid Base64 string';
+            }
+        }
+
+        // AES Encryption
+        function aesEncrypt(text, key) {
+            if (!key) return 'Error: Key required for AES encryption';
+            try {
+                return CryptoJS.AES.encrypt(text, key).toString();
+            } catch (e) {
+                return 'Error: Encryption failed';
+            }
+        }
+
+        function aesDecrypt(text, key) {
+            if (!key) return 'Error: Key required for AES decryption';
+            try {
+                const bytes = CryptoJS.AES.decrypt(text, key);
+                const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+                return decrypted || 'Error: Invalid key or corrupted data';
+            } catch (e) {
+                return 'Error: Decryption failed';
+            }
+        }
+
+        // Reverse Cipher
+        function reverseCipher(text) {
+            return text.split('').reverse().join('');
+        }
+
+        // Main App
+        const App = () => {
+            const root = document.getElementById('root');
+            
+            let state = {
+                selectedCipher: 'caesar',
+                inputText: '',
+                key: '3',
+                outputText: '',
+                showKey: false
+            };
+
+            const cipherInfo = {
+                caesar: {
+                    name: 'Caesar Cipher',
+                    description: 'Shifts each letter by a fixed number of positions in the alphabet. A classic encryption method used by Julius Caesar.',
+                    needsKey: true,
+                    keyLabel: 'Shift Amount (1-25)'
+                },
+                rot13: {
+                    name: 'ROT13',
+                    description: 'A special case of Caesar cipher with a shift of 13. Encrypting and decrypting use the same operation.',
+                    needsKey: false
+                },
+                base64: {
+                    name: 'Base64',
+                    description: 'Encodes text into Base64 format. Commonly used for encoding binary data in text form.',
+                    needsKey: false
+                },
+                aes: {
+                    name: 'AES Encryption',
+                    description: 'Advanced Encryption Standard - a strong symmetric encryption algorithm used worldwide for secure data transmission.',
+                    needsKey: true,
+                    keyLabel: 'Encryption Key (Password)'
+                },
+                reverse: {
+                    name: 'Reverse Cipher',
+                    description: 'Simply reverses the text. A basic but fun cipher method.',
+                    needsKey: false
+                }
+            };
+
+            function encrypt() {
+                const { selectedCipher, inputText, key } = state;
+                let result = '';
+
+                switch(selectedCipher) {
+                    case 'caesar':
+                        result = caesarCipher(inputText, parseInt(key) || 3);
+                        break;
+                    case 'rot13':
+                        result = rot13(inputText);
+                        break;
+                    case 'base64':
+                        result = base64Encode(inputText);
+                        break;
+                    case 'aes':
+                        result = aesEncrypt(inputText, key);
+                        break;
+                    case 'reverse':
+                        result = reverseCipher(inputText);
+                        break;
+                }
+
+                state.outputText = result;
+                render();
+            }
+
+            function decrypt() {
+                const { selectedCipher, inputText, key } = state;
+                let result = '';
+
+                switch(selectedCipher) {
+                    case 'caesar':
+                        result = caesarCipher(inputText, parseInt(key) || 3, true);
+                        break;
+                    case 'rot13':
+                        result = rot13(inputText);
+                        break;
+                    case 'base64':
+                        result = base64Decode(inputText);
+                        break;
+                    case 'aes':
+                        result = aesDecrypt(inputText, key);
+                        break;
+                    case 'reverse':
+                        result = reverseCipher(inputText);
+                        break;
+                }
+
+                state.outputText = result;
+                render();
+            }
+
+            function clear() {
+                state.inputText = '';
+                state.outputText = '';
+                state.key = state.selectedCipher === 'caesar' ? '3' : '';
+                render();
+            }
+
+            function copyToClipboard() {
+                navigator.clipboard.writeText(state.outputText).then(() => {
+                    alert('Copied to clipboard!');
+                });
+            }
+
+            function render() {
+                const info = cipherInfo[state.selectedCipher];
+                
+                root.innerHTML = `
+                    <div class="container">
+                        <div class="header">
+                            <h1>🌊 Ocean Encryption Tool</h1>
+                            <p>Secure your messages with various encryption methods</p>
+                        </div>
+
+                        <div class="cipher-selector">
+                            ${Object.keys(cipherInfo).map(cipher => `
+                                <button class="cipher-btn ${state.selectedCipher === cipher ? 'active' : ''}" 
+                                        onclick="selectCipher('${cipher}')">
+                                    ${cipherInfo[cipher].name}
+                                </button>
+                            `).join('')}
+                        </div>
+
+                        <div class="input-section">
+                            <label>Input Text:</label>
+                            <textarea 
+                                id="inputText" 
+                                placeholder="Enter your text here..."
+                                oninput="updateInput(this.value)"
+                            >${state.inputText}</textarea>
+                        </div>
+
+                        ${info.needsKey ? `
+                            <div class="input-section">
+                                <label>${info.keyLabel}:</label>
+                                <input 
+                                    type="${state.showKey ? 'text' : 'password'}" 
+                                    id="keyInput"
+                                    value="${state.key}"
+                                    oninput="updateKey(this.value)"
+                                    placeholder="${state.selectedCipher === 'caesar' ? 'Enter number (e.g., 3)' : 'Enter your secret key'}"
+                                />
+                            </div>
+                        ` : ''}
+
+                        <div class="action-buttons">
+                            <button class="action-btn encrypt-btn" onclick="encrypt()">
+                                🔒 Encrypt
+                            </button>
+                            <button class="action-btn decrypt-btn" onclick="decrypt()">
+                                🔓 Decrypt
+                            </button>
+                            <button class="action-btn clear-btn" onclick="clear()">
+                                🗑️ Clear
+                            </button>
+                        </div>
+
+                        ${state.outputText ? `
+                            <div class="result-section">
+                                <h3>Result:</h3>
+                                <div class="result-text">${state.outputText}</div>
+                                <button class="copy-btn" onclick="copyToClipboard()">
+                                    📋 Copy to Clipboard
+                                </button>
+                            </div>
+                        ` : ''}
+
+                        <div class="info-box">
+                            <h4>ℹ️ About ${info.name}</h4>
+                            <p>${info.description}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            window.selectCipher = (cipher) => {
+                state.selectedCipher = cipher;
+                state.key = cipher === 'caesar' ? '3' : '';
+                state.outputText = '';
+                render();
+            };
+
+            window.updateInput = (value) => {
+                state.inputText = value;
+            };
+
+            window.updateKey = (value) => {
+                state.key = value;
+            };
+
+            window.encrypt = encrypt;
+            window.decrypt = decrypt;
+            window.clear = clear;
+            window.copyToClipboard = copyToClipboard;
+
+            render();
+        };
+
+        App();
+    </script>
+</body>
+</html>

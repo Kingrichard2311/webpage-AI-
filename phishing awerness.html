@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Phishing Awareness — Interactive Training Module</title>
+<style>
+  :root{
+    --bg:#071124;
+    --card:#0d2130;
+    --muted:#9fb2c9;
+    --accent:#00d4ff;
+    --accent-2:#7bffb2;
+    --danger:#ff6b6b;
+    --good:#6bff9a;
+    --glass: rgba(255,255,255,0.03);
+    --glass-2: rgba(255,255,255,0.02);
+    --radius:14px;
+    font-family: "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:
+      radial-gradient(800px 400px at 10% 10%, rgba(0,212,255,0.03), transparent),
+      radial-gradient(700px 350px at 95% 85%, rgba(123,255,178,0.02), transparent),
+      var(--bg);
+    color:#e6f7ff;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    padding:28px;
+  }
+
+  header{
+    display:flex;
+    gap:16px;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:22px;
+  }
+  .brand{
+    display:flex; gap:14px; align-items:center;
+  }
+  .logo{
+    width:62px; height:62px; display:grid; place-items:center; border-radius:12px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    color:#071124; font-weight:700; font-size:1.1rem; box-shadow:0 8px 30px rgba(0,0,0,0.6);
+  }
+  h1{font-size:1.35rem; margin:0}
+  p.lead{margin:0; color:var(--muted); font-size:0.95rem}
+
+  main{
+    display:grid;
+    grid-template-columns: 1fr 420px;
+    gap:20px;
+    align-items:start;
+  }
+
+  /* Left column: module */
+  .module{
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+    border-radius:var(--radius); padding:20px; border:1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  }
+
+  .section-title{display:flex; justify-content:space-between; align-items:center; gap:12px}
+  .section-title h2{margin:0; color:var(--accent); font-size:1.05rem}
+  .badge{background:var(--glass); padding:6px 10px; border-radius:999px; color:var(--muted); font-size:0.85rem}
+
+  /* Animated hero */
+  .hero{
+    display:flex; gap:18px; align-items:center; margin:14px 0 18px;
+  }
+  .hero-visual{
+    width:110px; height:110px; border-radius:12px; display:grid; place-items:center;
+    background:linear-gradient(180deg, rgba(0,0,0,0.15), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.03);
+    position:relative; overflow:hidden;
+  }
+  /* pulsing envelope */
+  .envelope{
+    width:64px; height:44px; position:relative; transform:translateY(6px);
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float { 0%,100%{transform:translateY(6px)} 50%{transform:translateY(-6px)} }
+  .envelope .body{width:100%; height:100%; background:#06202b; border-radius:6px; border:2px solid var(--accent); box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+  .envelope .flap{position:absolute; top:-8px; left:0; right:0; height:44px; transform:skewY(-8deg); background:linear-gradient(135deg,var(--accent),var(--accent-2)); opacity:0.95}
+  .envelope .alert{position:absolute; right:-6px; top:-6px; background:var(--danger); color:#fff; font-weight:700; padding:6px 8px; border-radius:12px; transform:rotate(15deg); box-shadow:0 8px 18px rgba(0,0,0,0.6)}
+
+  .hero-copy{flex:1}
+  .hero-copy h3{margin:0 0 6px; font-size:1.05rem}
+  .hero-copy p{margin:0; color:var(--muted); font-size:0.96rem}
+
+  /* Interactive emails list */
+  .email-list{display:grid; gap:12px; margin-top:16px}
+  .email-card{
+    background:linear-gradient(0deg, rgba(255,255,255,0.015), rgba(255,255,255,0.00));
+    border-radius:12px; padding:12px; border:1px solid rgba(255,255,255,0.03);
+    display:flex; gap:12px; align-items:flex-start;
+  }
+  .sender{
+    width:86px; flex-shrink:0; text-align:center; font-size:0.85rem;
+    color:var(--muted);
+  }
+  .sender .avatar{width:56px; height:56px; border-radius:8px; background:rgba(255,255,255,0.02); display:inline-grid; place-items:center; margin-bottom:8px; border:1px solid rgba(255,255,255,0.03)}
+  .email-body{flex:1}
+  .subject{font-weight:700; color:#e8fbff}
+  .snippet{color:var(--muted); margin:6px 0 10px; font-size:0.95rem}
+  .email-actions{display:flex; gap:8px}
+
+  .btn{
+    padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:700; border:0;
+    background:var(--glass); color:var(--accent); transition:transform .15s, box-shadow .15s;
+  }
+  .btn:hover{transform:translateY(-3px)}
+  .btn.danger{background:linear-gradient(90deg,#3a0b0b, #8b1c1c); color:#fff}
+  .btn.positive{background:linear-gradient(90deg,#06351a,#0a7f45); color:#fff}
+
+  .hint{font-size:0.85rem; color:var(--muted); margin-top:8px}
+
+  /* Feedback pill */
+  .feedback{
+    margin-left:12px; font-weight:700; padding:6px 10px; border-radius:999px; display:inline-block;
+  }
+  .feedback.correct{background:rgba(107,255,154,0.12); color:var(--good); border:1px solid rgba(107,255,154,0.12)}
+  .feedback.wrong{background:rgba(255,107,107,0.08); color:var(--danger); border:1px solid rgba(255,107,107,0.08)}
+
+  /* Right column: widgets */
+  .side{
+    display:flex; flex-direction:column; gap:18px;
+  }
+  .widget{background:var(--card); border-radius:12px; padding:14px; border:1px solid rgba(255,255,255,0.03)}
+  .progress{
+    height:14px; background:var(--glass-2); border-radius:999px; overflow:hidden; border:1px solid rgba(255,255,255,0.03)
+  }
+  .progress-fill{height:100%; width:0; background:linear-gradient(90deg,var(--accent),var(--accent-2)); transition:width 1s ease}
+
+  .tips{display:grid; gap:10px}
+  .tip{display:flex; gap:12px; align-items:flex-start}
+  .tip .icon{width:34px; height:34px; border-radius:8px; display:grid; place-items:center; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03)}
+  .tip .text{color:var(--muted); font-size:0.95rem}
+
+  /* Quiz */
+  .quiz-question{margin-top:8px}
+  .options{display:grid; gap:8px; margin-top:10px}
+  .option{background:var(--glass); padding:10px; border-radius:10px; cursor:pointer; border:1px solid rgba(255,255,255,0.02)}
+  .option:hover{transform:translateY(-3px)}
+  .option.correct{border-color:rgba(107,255,154,0.2); background:linear-gradient(90deg, rgba(107,255,154,0.03), transparent)}
+  .option.wrong{border-color:rgba(255,107,107,0.12); background:linear-gradient(90deg, rgba(255,107,107,0.02), transparent)}
+
+  /* Completion modal */
+  .modal{
+    position:fixed; inset:0; display:grid; place-items:center; background:rgba(0,0,0,0.5); z-index:9999; opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .modal.show{opacity:1; pointer-events:auto}
+  .modal-card{background:linear-gradient(180deg, #021623, #072433); padding:26px; border-radius:12px; width:420px; text-align:center; border:1px solid rgba(255,255,255,0.04)}
+  .modal-card h3{margin:0 0 10px}
+  .modal-card p{color:var(--muted)}
+
+  footer{margin-top:22px; text-align:center; color:var(--muted); font-size:0.9rem}
+
+  /* Responsive */
+  @media (max-width:980px){
+    main{grid-template-columns: 1fr; padding-bottom:40px}
+    .hero{flex-direction:row}
+    .side{order:2}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">RL</div>
+    <div>
+      <h1>Phishing Awareness Interactive Training</h1>
+      <p class="lead"> I have made this webpage for anyone to learn to spot scams, trains your eye with real examples, and test your knowledge.</p>
+    </div>
+  </div>
+  <div class="badge">Estimated time: 8–12 minutes</div>
+</header>
+
+<main>
+  <section class="module" id="module">
+    <div class="section-title">
+      <h2>Spot phishing emails — interactive practice</h2>
+      <div class="badge" id="scoreBadge">Score: 0 / 5</div>
+    </div>
+
+    <div class="hero" aria-hidden="false">
+      <div class="hero-visual" aria-hidden="true">
+        <div class="envelope" title="Phishing alert">
+          <div class="flap"></div>
+          <div class="body"></div>
+          <div class="alert">!</div>
+        </div>
+      </div>
+      <div class="hero-copy">
+        <h3>Practical exercise</h3>
+        <p>Below are simulated email examples. For each email, decide whether it is <strong>Phishing</strong> or <strong>Legitimate</strong>. After each answer you'll receive immediate feedback explaining the red flags.</p>
+      </div>
+    </div>
+
+    <div class="email-list" id="emailList" aria-live="polite">
+      <!-- Email cards inserted by JS -->
+    </div>
+
+    <div style="margin-top:18px; display:flex; gap:10px; align-items:center; justify-content:flex-end">
+      <button class="btn" id="revealAll">Reveal All Explanations</button>
+      <button class="btn" id="finishBtn">Finish & Take Quiz</button>
+    </div>
+
+    <hr style="border:none; height:1px; background:rgba(255,255,255,0.03); margin:18px 0">
+
+    <div id="explanations" class="hint" style="display:none">
+      <!-- Detailed explanations will appear here -->
+    </div>
+  </section>
+
+  <aside class="side">
+    <div class="widget">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px">
+        <div>
+          <div style="font-size:0.9rem; color:var(--muted)">Module progress</div>
+          <div style="font-weight:800; font-size:1.05rem">Email spotting</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:0.85rem; color:var(--muted)">Completed</div>
+          <div id="completedCount" style="font-weight:800; font-size:1.05rem">0 / 5</div>
+        </div>
+      </div>
+      <div style="margin-top:12px" class="progress" aria-hidden="true">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-weight:800">Quick tips</div>
+        <div style="color:var(--muted); font-size:0.9rem">Keep these in mind</div>
+      </div>
+      <div class="tips" style="margin-top:12px">
+        <div class="tip"><div class="icon">🔎</div><div class="text"><strong>Check the sender:</strong> Hover or inspect the email address. Look for misspellings or unexpected domains.</div></div>
+        <div class="tip"><div class="icon">🔗</div><div class="text"><strong>Hover links:</strong> Before clicking, hover over links to verify the destination.</div></div>
+        <div class="tip"><div class="icon">⚠️</div><div class="text"><strong>Urgency is a trick:</strong> Attackers use panic to force mistakes. Pause and verify.</div></div>
+        <div class="tip"><div class="icon">💬</div><div class="text"><strong>Unexpected attachments:</strong> Scan them or confirm with the sender by phone or separate message.</div></div>
+      </div>
+    </div>
+
+    <div class="widget" id="quizWidget">
+      <div style="font-weight:800">Mini Quiz (3 questions)</div>
+      <div id="quizArea">
+        <!-- Quiz content injected here -->
+      </div>
+      <div style="margin-top:10px; text-align:right">
+        <button class="btn" id="startQuiz">Start Quiz</button>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<!-- Completion modal -->
+<div class="modal" id="modal">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle">Well done!</h3>
+    <p id="modalText">You completed the email-spotting exercise.</p>
+    <div style="margin-top:14px; display:flex; gap:10px; justify-content:center">
+      <button class="btn" id="retryBtn">Retry Exercise</button>
+      <button class="btn" id="proceedQuizBtn">Proceed to Quiz</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div>Made by me  <strong>Richard Lamy</strong></div>
+</footer>
+
+<script>
+/* --- Data for simulated emails --- */
+const emails = [
+  {
+    id:1,
+    senderName: "PaySecure",
+    senderEmail: "support@paysecure.com",
+    subject: "Action Required: Verify your payment details",
+    snippet: "Dear customer, your payment method failed. Click the link to update and avoid account suspension.",
+    body: "Dear Customer,\n\nWe could not process your recent payment. Please click here to update your card details: http://paysecure.verify-account.com/confirm\n\nRegards,\nPaySecure Billing",
+    isPhishing:true,
+    reason:"The link domain is suspicious and not the official company domain; urgency and generic greeting are red flags."
+  },
+  {
+    id:2,
+    senderName: "University IT",
+    senderEmail: "it-support@teesside.ac.uk",
+    subject: "Scheduled maintenance — no action required",
+    snippet: "Dear Richard, the service will be unavailable for 1 hour from 02:00. No action needed.",
+    body: "Dear Richard,\n\nWe will perform scheduled maintenance tonight. No action is required.\n\nKind regards,\nIT Services",
+    isPhishing:false,
+    reason:"Legitimate sender domain, no urgent call-to-action, and the message is informative rather than demanding credentials."
+  },
+  {
+    id:3,
+    senderName: "Parcel Delivery",
+    senderEmail: "noreply@parcel-delivery.co",
+    subject: "Delivery Failed - Verify Address Now",
+    snippet: "We attempted your delivery, verify your address to reschedule.",
+    body: "Hi,\n\nWe couldn't deliver your package. To reschedule, please confirm your address here: https://parcel-delivery.co/confirm\n\nIf you did not order anything, contact us.",
+    isPhishing:true,
+    reason:"Unexpected delivery notice and the link uses a slightly odd domain (could be spoofed); verify via official carrier site or tracking number."
+  },
+  {
+    id:4,
+    senderName: "LinkedIn",
+    senderEmail: "security@linkedin.com",
+    subject: "New sign-in from Chrome on Windows",
+    snippet: "We noticed a sign-in from a new device. If this was you, you can ignore this message.",
+    body: "Hello Richard,\n\nWe noticed a new sign-in from Chrome on Windows. If this wasn't you, secure your account here: https://www.linkedin.com/secure\n\nThanks,\nLinkedIn Security",
+    isPhishing:false,
+    reason:"Sender domain matches the service and link appears to be legitimate. However always hover links to check exact target."
+  },
+  {
+    id:5,
+    senderName: "HR Department",
+    senderEmail: "hr@northbridge-bank.com",
+    subject: "Payslip Attached for March",
+    snippet: "Please find attached your payslip. Download to view.",
+    body: "Dear Richard,\n\nPlease find attached your payslip for March. If you have issues, reply to hr@northbridge-bank.com.\n\nBest regards,\nHR",
+    isPhishing:true,
+    reason:"Attachment-only emails from HR can be faked; confirm the sender through internal channels before opening attachments if unexpected."
+  }
+];
+
+let score = 0;
+let answered = 0;
+
+/* Helper: create a card for each email */
+function createEmailCard(email){
+  const card = document.createElement('div');
+  card.className = 'email-card';
+  card.dataset.id = email.id;
+
+  const sender = document.createElement('div');
+  sender.className = 'sender';
+  sender.innerHTML = `<div class="avatar">${escapeHtml(email.senderName.split(' ')[0][0]||'?')}</div><div>${escapeHtml(email.senderName)}<br><small style="color:var(--muted)">${escapeHtml(email.senderEmail)}</small></div>`;
+
+  const body = document.createElement('div');
+  body.className = 'email-body';
+  body.innerHTML = `<div class="subject">${escapeHtml(email.subject)}</div>
+                    <div class="snippet">${escapeHtml(email.snippet)}</div>
+                    <div style="white-space:pre-wrap; font-size:0.95rem; color:var(--muted)">${escapeHtml(email.body)}</div>`;
+
+  const actions = document.createElement('div');
+  actions.className = 'email-actions';
+  actions.innerHTML = `
+    <button class="btn danger" data-action="phish">Phishing</button>
+    <button class="btn positive" data-action="legit">Legitimate</button>
+  `;
+
+  // feedback placeholder
+  const feedback = document.createElement('div');
+  feedback.className = 'hint';
+  feedback.style.marginTop='8px';
+
+  body.appendChild(actions);
+  body.appendChild(feedback);
+  card.appendChild(sender);
+  card.appendChild(body);
+
+  // event listeners
+  actions.querySelector('[data-action="phish"]').addEventListener('click', ()=> handleAnswer(email.id, true, feedback));
+  actions.querySelector('[data-action="legit"]').addEventListener('click', ()=> handleAnswer(email.id, false, feedback));
+  return card;
+}
+
+function handleAnswer(id, chosenPhishing, feedbackEl){
+  const email = emails.find(e=>e.id===id);
+  // prevent double answer
+  const card = document.querySelector(`.email-card[data-id="${id}"]`);
+  if(card.dataset.answered==='true') return;
+
+  card.dataset.answered='true';
+  answered++;
+  document.getElementById('completedCount').textContent = `${answered} / ${emails.length}`;
+  const pct = Math.round((answered/emails.length)*100);
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  if(chosenPhishing === email.isPhishing){
+    // correct
+    score++;
+    document.getElementById('scoreBadge').textContent = `Score: ${score} / ${emails.length}`;
+    feedbackEl.innerHTML = `<span class="feedback correct">Correct</span> — ${escapeHtml(email.reason)}`;
+  } else {
+    feedbackEl.innerHTML = `<span class="feedback wrong">Incorrect</span> — ${escapeHtml(email.reason)}`;
+  }
+
+  // reveal after answering
+  const reveal = document.createElement('div');
+  reveal.style.marginTop='8px';
+  reveal.style.color='var(--muted)';
+  reveal.innerHTML = `<strong>Red flags:</strong> ${escapeHtml(email.reason)}`;
+  feedbackEl.appendChild(reveal);
+
+  // mark buttons disabled
+  const buttons = card.querySelectorAll('button');
+  buttons.forEach(b=> b.disabled=true);
+  buttons.forEach(b=> b.style.opacity=0.6);
+
+  // if all answered show modal after short delay
+  if(answered === emails.length){
+    setTimeout(()=> showModal(), 700);
+  }
+}
+
+/* populate email list */
+const emailListEl = document.getElementById('emailList');
+emails.forEach(e => emailListEl.appendChild(createEmailCard(e)));
+
+/* Reveal all explanations */
+document.getElementById('revealAll').addEventListener('click', ()=>{
+  document.querySelectorAll('.email-card').forEach(card=>{
+    const id = Number(card.dataset.id);
+    const email = emails.find(e=>e.id===id);
+    const feedback = card.querySelector('.hint');
+    if(card.dataset.answered!=='true'){
+      // mark wrong automatically
+      card.dataset.answered='true';
+      card.querySelectorAll('button').forEach(b=>{b.disabled=true; b.style.opacity=0.6});
+      answered++;
+      document.getElementById('completedCount').textContent = `${answered} / ${emails.length}`;
+      const pct = Math.round((answered/emails.length)*100);
+      document.getElementById('progressFill').style.width = pct + '%';
+      feedback.innerHTML = `<span class="feedback wrong">Unanswered</span> — ${escapeHtml(email.reason)}`;
+    }
+  });
+  if(answered === emails.length) showModal();
+});
+
+/* Finish button opens quiz area */
+document.getElementById('finishBtn').addEventListener('click', ()=>{
+  startQuiz();
+  document.getElementById('quizWidget').scrollIntoView({behavior:'smooth'});
+});
+
+/* Modal controls */
+const modal = document.getElementById('modal');
+function showModal(){
+  modal.classList.add('show');
+  const text = document.getElementById('modalText');
+  text.textContent = `You scored ${score} out of ${emails.length} in the email-spotting exercise.`;
+}
+document.getElementById('retryBtn').addEventListener('click', ()=>{
+  // reset
+  document.querySelectorAll('.email-card').forEach(card=>{
+    card.dataset.answered='false';
+    card.querySelectorAll('button').forEach(b=>{b.disabled=false; b.style.opacity=1});
+    const hint = card.querySelector('.hint');
+    if(hint) hint.innerHTML='';
+  });
+  score=0; answered=0;
+  document.getElementById('scoreBadge').textContent = `Score: 0 / ${emails.length}`;
+  document.getElementById('completedCount').textContent = `0 / ${emails.length}`;
+  document.getElementById('progressFill').style.width = '0%';
+  modal.classList.remove('show');
+});
+document.getElementById('proceedQuizBtn').addEventListener('click', ()=>{
+  modal.classList.remove('show');
+  startQuiz();
+  document.getElementById('quizWidget').scrollIntoView({behavior:'smooth'});
+});
+
+/* --- QUIZ SECTION --- */
+const quizQuestions = [
+  {
+    q:"Which of these is the best immediate action when you receive a suspicious email with a link?",
+    options:[
+      "Click the link to check if it is real.",
+      "Hover the link to view its destination, don't click, and verify sender via separate channel.",
+      "Reply to the email asking for confirmation.",
+      "Forward it to all colleagues to warn them."
+    ],
+    correct:1
+  },
+  {
+    q:"An email asks you to reset your password and provides a link. The sender address appears correct but it's slightly misspelled. What should you do?",
+    options:[
+      "Use the link to reset immediately to be safe.",
+      "Ignore and delete the email without checking.",
+      "Go to the official site manually (type URL) or use a known bookmark, not the link provided.",
+      "Reply asking if it's legitimate."
+    ],
+    correct:2
+  },
+  {
+    q:"What is a strong sign that an email might be a phishing attempt?",
+    options:[
+      "An email with proper company branding and correct grammar.",
+      "A message that includes a personalised greeting and a recent transaction ID.",
+      "An urgent request to transfer money or provide credentials, accompanied by unfamiliar sender domain.",
+      "An email that arrives from a colleague you work with daily."
+    ],
+    correct:2
+  }
+];
+
+let quizIndex = 0;
+let quizScore = 0;
+function startQuiz(){
+  quizIndex=0; quizScore=0;
+  document.getElementById('quizArea').innerHTML = renderQuestion(quizIndex);
+}
+
+function renderQuestion(i){
+  const q = quizQuestions[i];
+  return `<div class="quiz-question">
+    <div style="font-weight:800">${i+1}. ${escapeHtml(q.q)}</div>
+    <div class="options">
+      ${q.options.map((opt, idx)=>`<div class="option" data-idx="${idx}">${escapeHtml(opt)}</div>`).join('')}
+    </div>
+    <div style="margin-top:10px; text-align:right">
+      <button class="btn" id="nextQ" ${i===quizQuestions.length-1 ? 'disabled':''}>Next</button>
+    </div>
+  </div>`;
+}
+
+/* delegate clicks for quiz options */
+document.getElementById('quizWidget').addEventListener('click', (e)=>{
+  const opt = e.target.closest('.option');
+  if(opt){
+    const idx = Number(opt.dataset.idx);
+    const current = quizQuestions[quizIndex];
+    // disable further clicks
+    const container = opt.parentElement;
+    container.querySelectorAll('.option').forEach(o=> o.style.pointerEvents='none');
+    if(idx === current.correct){
+      opt.classList.add('correct'); quizScore++;
+    } else {
+      opt.classList.add('wrong');
+      // highlight correct
+      const correctEl = container.querySelector(`[data-idx="${current.correct}"]`);
+      if(correctEl) correctEl.classList.add('correct');
+    }
+    // enable next
+    const nextBtn = document.getElementById('nextQ');
+    if(nextBtn) nextBtn.disabled=false;
+    // if last question show results after delay
+  }
+
+  const next = e.target.closest('#nextQ');
+  if(next){
+    if(quizIndex < quizQuestions.length-1){
+      quizIndex++;
+      document.getElementById('quizArea').innerHTML = renderQuestion(quizIndex);
+    } else {
+      // show results
+      document.getElementById('quizArea').innerHTML = `<div style="text-align:center; padding:14px">
+        <div style="font-size:1.1rem; font-weight:800">Quiz complete</div>
+        <div style="margin-top:8px; color:var(--muted)">Your score: <strong>${quizScore} / ${quizQuestions.length}</strong></div>
+        <div style="margin-top:12px; color:var(--muted)">Review the quick tips above and revisit the email examples to improve your spotting skills.</div>
+      </div>`;
+    }
+  }
+});
+
+/* small helper to escape text */
+function escapeHtml(s){
+  if(!s) return '';
+  return s.replaceAll('&', '&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+}
+
+/* start state: small intro animation for the progress */
+document.addEventListener('DOMContentLoaded', ()=>{
+  // initial small animation
+  setTimeout(()=> document.getElementById('progressFill').style.width = '6%', 300);
+});
+
+/* Simple accessibility: keyboard navigation for quiz options */
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){
+    const focused = document.activeElement;
+    if(focused && focused.classList.contains('option')){
+      focused.click();
+    }
+  }
+});
+</script>
+</body>
+</html>
